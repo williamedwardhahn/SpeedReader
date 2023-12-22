@@ -1,0 +1,65 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rapid Serial Visual Presentation Reader</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+        }
+        #controlPanel {
+            margin-top: 20px;
+            position: absolute;
+            top: 0;
+        }
+        #displayArea {
+            font-size: 24px;
+            margin-top: 33vh; /* Positioning in the top third of the page */
+            text-align: center;
+            width: 100%;
+        }
+        #speedSlider {
+            width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div id="controlPanel">
+        <textarea id="textArea" placeholder="Enter text here..."></textarea><br>
+        <button onclick="startReading()">Start Reading</button><br>
+        Speed: <input type="range" id="speedSlider" min="100" max="1000" value="300">
+    </div>
+    <div id="displayArea"></div>
+    <script>
+        let timer;
+        function startReading() {
+            document.getElementById("controlPanel").style.display = "none"; // Hide the control panel
+            clearInterval(timer);
+            const text = document.getElementById("textArea").value.split(/\s+/);
+            let index = 0;
+            const speedSlider = document.getElementById("speedSlider");
+            function displayWord() {
+                if (index < text.length) {
+                    document.getElementById("displayArea").textContent = text[index++];
+                } else {
+                    clearInterval(timer);
+                    document.getElementById("controlPanel").style.display = "block"; // Show the control panel again
+                }
+            }
+            timer = setInterval(displayWord, 1000 / (speedSlider.value / 100));
+        }
+        document.getElementById("speedSlider").oninput = function() {
+            clearInterval(timer);
+            startReading();
+        }
+    </script>
+</body>
+</html>
