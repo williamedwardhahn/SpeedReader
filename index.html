@@ -3,425 +3,952 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RSVP Speed Reader</title>
+    <title>Advanced SpeedReader - RSVP Technology</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-dark: #0f1419;
+            --primary-light: #ffffff;
+            --accent-1: #00d9ff;
+            --accent-2: #ff006e;
+            --accent-3: #ffbe0b;
+            --text-primary: #e8f0f5;
+            --text-secondary: #a8b8c8;
+            --bg-cards: #1a2332;
+            --border-color: #2d3a4a;
+            --success: #00ff41;
+            --warning: #ffb700;
+        }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            height: 100vh;
-            background: #1a1a2e;
-            color: #e0e0e0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, #1a2f4a 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(90deg, var(--accent-1), var(--accent-2), var(--accent-3));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 0.95em;
+            letter-spacing: 0.5px;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Input Section */
+        .input-section {
+            background: rgba(26, 35, 50, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .input-section h2 {
+            font-size: 1.1em;
+            margin-bottom: 16px;
+            color: var(--accent-1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        textarea {
+            width: 100%;
+            height: 250px;
+            background: rgba(15, 20, 25, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+            line-height: 1.6;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-1);
+            box-shadow: 0 0 16px rgba(0, 217, 255, 0.3);
+        }
+
+        /* Reader Section */
+        .reader-section {
+            background: rgba(26, 35, 50, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            justify-content: space-between;
+            min-height: 400px;
         }
 
-        /* ── Input Screen ── */
-        #inputScreen {
-            width: 90%;
-            max-width: 600px;
+        /* Word Display */
+        .word-display {
             text-align: center;
-        }
-
-        #inputScreen h1 {
-            font-size: 1.8rem;
-            margin-bottom: 20px;
-            color: #e94560;
-        }
-
-        #textArea {
-            width: 100%;
-            height: 200px;
-            padding: 14px;
-            border: 2px solid #333;
-            border-radius: 8px;
-            background: #16213e;
-            color: #e0e0e0;
-            font-size: 15px;
-            resize: vertical;
-            outline: none;
-        }
-
-        #textArea:focus { border-color: #e94560; }
-
-        #startBtn {
-            margin-top: 16px;
-            padding: 12px 40px;
-            font-size: 18px;
-            font-weight: 600;
-            border: none;
-            border-radius: 8px;
-            background: #e94560;
-            color: #fff;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        #startBtn:hover { background: #c73652; }
-
-        /* ── Reader Screen ── */
-        #readerScreen {
-            display: none;
-            width: 100%;
-            height: 100vh;
+            min-height: 120px;
+            display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            font-size: 3.5em;
+            font-weight: 500;
+            letter-spacing: -1px;
             position: relative;
+            margin: 40px 0;
         }
 
-        /* Progress bar */
-        #progressBar {
+        .word-display .orp {
+            color: var(--accent-2);
+            font-weight: 700;
+        }
+
+        .word-display.pulse {
+            animation: wordPulse 0.4s ease-in-out;
+        }
+
+        @keyframes wordPulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin-bottom: 24px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+            width: 0%;
+            transition: width 0.2s linear;
+            border-radius: 2px;
+        }
+
+        .progress-text {
+            font-size: 0.85em;
+            color: var(--text-secondary);
+            text-align: right;
+        }
+
+        /* Controls Panel */
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-size: 0.85em;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .control-input {
+            background: rgba(15, 20, 25, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px 12px;
+            color: var(--text-primary);
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+        }
+
+        .control-input:focus {
+            outline: none;
+            border-color: var(--accent-1);
+            box-shadow: 0 0 12px rgba(0, 217, 255, 0.2);
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        /* Buttons */
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        button {
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: rgba(0, 217, 255, 0.1);
+            color: var(--accent-1);
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
             position: absolute;
             top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 217, 255, 0.2);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        button:hover::before {
             left: 0;
-            height: 4px;
-            background: #e94560;
-            transition: width 0.15s linear;
         }
 
-        /* Word display */
-        #wordDisplay {
-            font-size: clamp(2rem, 6vw, 4.5rem);
-            font-weight: 700;
-            letter-spacing: 2px;
-            min-height: 1.2em;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            user-select: none;
-            cursor: pointer;
+        button:hover {
+            border-color: var(--accent-1);
+            transform: translateY(-2px);
         }
 
-        /* Controls — cinema mode: auto-hide */
-        #controls {
-            position: absolute;
-            bottom: 30px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 14px;
-            width: 90%;
-            max-width: 600px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            pointer-events: none;
+        button:active {
+            transform: translateY(0);
         }
 
-        #readerScreen.show-controls #controls {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        #progressBar {
-            opacity: 0;
-            transition: opacity 0.3s ease, width 0.15s linear;
-        }
-
-        #readerScreen.show-controls #progressBar {
-            opacity: 1;
-        }
-
-        /* Hide cursor when controls are hidden */
-        #readerScreen { cursor: none; }
-        #readerScreen.show-controls { cursor: default; }
-
-        .control-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 10px 18px;
-            font-size: 15px;
-            font-weight: 600;
+        button.primary {
+            background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+            color: var(--primary-dark);
             border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.2s;
-            color: #fff;
-            background: #16213e;
-            border: 1px solid #333;
+            font-weight: 700;
         }
 
-        .btn:hover { background: #1a3a5c; }
-        .btn.primary { background: #e94560; border-color: #e94560; }
-        .btn.primary:hover { background: #c73652; }
+        button.primary:hover {
+            box-shadow: 0 8px 24px rgba(0, 217, 255, 0.4);
+        }
 
-        /* WPM control */
-        .wpm-group {
+        /* Settings Panel */
+        .settings-panel {
+            background: rgba(15, 20, 25, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .settings-panel h3 {
+            font-size: 0.9em;
+            color: var(--accent-3);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .setting-item {
             display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .wpm-group label {
-            font-size: 14px;
-            font-weight: 600;
-            color: #aaa;
+        .setting-item:last-child {
+            border-bottom: none;
         }
 
-        #wpmSlider {
-            width: 180px;
-            accent-color: #e94560;
+        .setting-label {
+            font-size: 0.85em;
+            color: var(--text-secondary);
         }
 
-        #wpmInput {
-            width: 70px;
-            padding: 6px 8px;
-            font-size: 15px;
-            text-align: center;
-            border: 1px solid #333;
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: var(--accent-1);
+            border-color: var(--accent-1);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: left 0.3s ease;
+        }
+
+        .toggle-switch.active::after {
+            left: 26px;
+        }
+
+        /* Mode Selection */
+        .mode-select {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .mode-btn {
+            padding: 12px;
+            background: rgba(0, 217, 255, 0.05);
+            border: 1px solid var(--border-color);
             border-radius: 6px;
-            background: #16213e;
-            color: #e0e0e0;
-            outline: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        #wpmInput:focus { border-color: #e94560; }
-
-        /* Word counter */
-        #wordCounter {
-            font-size: 13px;
-            color: #777;
+        .mode-btn.active {
+            background: var(--accent-1);
+            color: var(--primary-dark);
+            border-color: var(--accent-1);
         }
 
-        /* Keyboard hint */
-        #hint {
-            font-size: 12px;
-            color: #555;
+        /* Context View */
+        .context-view {
+            font-size: 0.28em;
+            color: var(--text-secondary);
+            margin-top: 16px;
+            line-height: 1.6;
+            max-width: 500px;
+            text-align: center;
+            opacity: 0.7;
         }
 
-        #hint kbd {
+        .context-view .ctx-current {
+            color: var(--accent-1);
+            font-weight: 700;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 40px 20px;
+        }
+
+        .empty-state .icon {
+            font-size: 3em;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Statistics */
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .stat {
+            background: rgba(0, 217, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--accent-1);
+        }
+
+        .stat-label {
+            font-size: 0.75em;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        /* Keyboard Shortcuts */
+        .shortcuts {
+            font-size: 0.8em;
+            color: var(--text-secondary);
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .shortcut-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 6px 0;
+        }
+
+        .key {
+            background: rgba(255, 255, 255, 0.1);
             padding: 2px 6px;
-            border: 1px solid #444;
             border-radius: 3px;
-            background: #222;
-            font-family: inherit;
+            font-family: monospace;
+            font-weight: 600;
         }
 
-        #backBtn { font-size: 14px; }
+        /* Animations */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .word-display {
+                font-size: 2.5em;
+                min-height: 80px;
+            }
+
+            .controls {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="header">
+        <h1>⚡ SpeedReader</h1>
+        <p>Advanced RSVP with Optimal Recognition Point highlighting</p>
+    </div>
 
-<!-- Input Screen -->
-<div id="inputScreen">
-    <h1>RSVP Speed Reader</h1>
-    <textarea id="textArea" placeholder="Paste your text here..."></textarea>
-    <br>
-    <button id="startBtn" onclick="startReader()">Start Reading</button>
-</div>
+    <div class="container">
+        <!-- Input Section -->
+        <div class="input-section">
+            <h2>📝 Your Text</h2>
+            <textarea id="textInput" placeholder="Paste or type your text here..."></textarea>
+            
+            <div style="margin-top: 16px; display: flex; gap: 8px;">
+                <button onclick="loadSample()" style="flex: 1;">Load Sample</button>
+                <button onclick="clearText()" style="flex: 1;">Clear</button>
+            </div>
 
-<!-- Reader Screen -->
-<div id="readerScreen">
-    <div id="progressBar"></div>
-    <div id="wordDisplay"></div>
-
-    <div id="controls">
-        <div class="control-row">
-            <button class="btn" onclick="skip(-30)" title="Back 30 words">&#9664;&#9664; 30</button>
-            <button class="btn" onclick="skip(-1)" title="Back 1 word">&#9664;</button>
-            <button class="btn primary" id="pauseBtn" onclick="togglePause()">Pause</button>
-            <button class="btn" onclick="skip(1)" title="Forward 1 word">&#9654;</button>
-            <button class="btn" onclick="skip(30)" title="Forward 30 words">30 &#9654;&#9654;</button>
+            <div class="stats" style="margin-top: 20px;">
+                <div class="stat">
+                    <div class="stat-value" id="wordCount">0</div>
+                    <div class="stat-label">Words</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="charCount">0</div>
+                    <div class="stat-label">Characters</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="readTime">0m</div>
+                    <div class="stat-label">Est. Read</div>
+                </div>
+            </div>
         </div>
 
-        <div class="control-row wpm-group">
-            <label>WPM</label>
-            <input type="range" id="wpmSlider" min="50" max="1000" step="10" value="300">
-            <input type="number" id="wpmInput" min="50" max="1000" step="10" value="300">
-        </div>
+        <!-- Reader Section -->
+        <div class="reader-section">
+            <!-- Mode Selection -->
+            <div class="mode-select">
+                <button class="mode-btn active" onclick="setMode('sprint', this)">Sprint Mode</button>
+                <button class="mode-btn" onclick="setMode('cruise', this)">Cruise Mode</button>
+            </div>
 
-        <div id="wordCounter">0 / 0</div>
+            <!-- Word Display -->
+            <div class="word-display" id="wordDisplay">
+                <div class="empty-state">
+                    <div class="icon">📖</div>
+                    <p>Paste text to begin reading</p>
+                </div>
+            </div>
 
-        <div class="control-row">
-            <button class="btn" id="backBtn" onclick="backToInput()">&#8592; New Text</button>
-        </div>
+            <!-- Progress -->
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text"><span id="currentWord">0</span> / <span id="totalWords">0</span></div>
+            </div>
 
-        <div id="hint">
-            <kbd>Space</kbd> pause &nbsp;
-            <kbd>&larr;</kbd><kbd>&rarr;</kbd> &plusmn;1 word &nbsp;
-            <kbd>Shift+&larr;</kbd><kbd>Shift+&rarr;</kbd> &plusmn;30 words
+            <!-- Controls -->
+            <div class="controls">
+                <div class="control-group">
+                    <label>Speed (WPM)</label>
+                    <input type="range" id="speedSlider" min="100" max="1000" value="300" class="control-input">
+                    <div style="text-align: center; color: var(--accent-1); font-weight: 700; font-size: 0.9em;" id="speedDisplay">300 WPM</div>
+                </div>
+                <div class="control-group">
+                    <label>Mode</label>
+                    <select id="displayMode" class="control-input" onchange="updateDisplayMode()">
+                        <option value="word">Word Only</option>
+                        <option value="phrase">Phrase (3 words)</option>
+                        <option value="sentence">Sentence</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Settings -->
+            <div class="settings-panel">
+                <h3>⚙️ Settings</h3>
+                <div class="setting-item">
+                    <span class="setting-label">ORP Highlighting</span>
+                    <div class="toggle-switch active" onclick="toggleORP(this)"></div>
+                </div>
+                <div class="setting-item">
+                    <span class="setting-label">Smart Pauses</span>
+                    <div class="toggle-switch active" onclick="togglePauses(this)"></div>
+                </div>
+                <div class="setting-item">
+                    <span class="setting-label">Context View</span>
+                    <div class="toggle-switch" onclick="toggleContext(this)"></div>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="button-group">
+                <button id="startBtn" class="primary" onclick="startReading()">▶ Start</button>
+                <button id="pauseBtn" onclick="pauseReading()" style="display:none;">⏸ Pause</button>
+                <button onclick="resetReading()">↻ Reset</button>
+            </div>
+
+            <!-- Shortcuts -->
+            <div class="shortcuts">
+                <strong>Keyboard:</strong>
+                <div class="shortcut-item">
+                    <span>Play/Pause</span>
+                    <span class="key">Space</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Next word</span>
+                    <span class="key">→</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Previous word</span>
+                    <span class="key">←</span>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-    const $ = id => document.getElementById(id);
+    <script>
+        class SpeedReader {
+            constructor() {
+                this.words = [];
+                this.currentIndex = 0;
+                this.isPlaying = false;
+                this.wpm = 300;
+                this.showORP = true;
+                this.smartPauses = true;
+                this.mode = 'sprint'; // sprint or cruise
+                this.displayMode = 'word'; // word, phrase, sentence
+                this.showContext = false;
+                this.timer = null;
+            }
 
-    let words = [];
-    let index = 0;
-    let timer = null;
-    let paused = false;
-    let hideTimeout = null;
+            calculateORP(word) {
+                const len = word.length;
+                if (len <= 4) return Math.ceil(len / 2) - 1;
+                if (len <= 6) return 1;
+                if (len <= 8) return 2;
+                return 3;
+            }
 
-    /* ── Cinema mode: show controls on mouse move, hide after idle ── */
-    function flashControls() {
-        $('readerScreen').classList.add('show-controls');
-        clearTimeout(hideTimeout);
-        hideTimeout = setTimeout(() => {
-            if (!paused) $('readerScreen').classList.remove('show-controls');
-        }, 2000);
-    }
+            formatWordWithORP(word) {
+                if (!this.showORP) return word;
+                const orpIndex = this.calculateORP(word);
+                const before = word.substring(0, orpIndex);
+                const orp = word.substring(orpIndex, orpIndex + 1);
+                const after = word.substring(orpIndex + 1);
+                return `${before}<span class="orp">${orp}</span>${after}`;
+            }
 
-    $('readerScreen').addEventListener('mousemove', flashControls);
-    $('readerScreen').addEventListener('touchstart', flashControls);
+            getDisplayText() {
+                if (this.words.length === 0) return '';
 
-    /* ── WPM helpers ── */
-    function getWPM() {
-        return parseInt($('wpmSlider').value, 10);
-    }
+                if (this.displayMode === 'word') {
+                    return this.formatWordWithORP(this.words[this.currentIndex]);
+                }
 
-    function msPerWord() {
-        return 60000 / getWPM();
-    }
+                let start, end;
+                if (this.displayMode === 'phrase') {
+                    start = Math.max(0, this.currentIndex - 1);
+                    end = Math.min(this.words.length, this.currentIndex + 2);
+                } else {
+                    // sentence mode — find sentence boundaries
+                    start = this.currentIndex;
+                    end = this.currentIndex;
+                    while (start > 0 && !this.endsWithPunctuation(this.words[start - 1])) {
+                        start--;
+                    }
+                    while (end < this.words.length - 1 && !this.endsWithPunctuation(this.words[end])) {
+                        end++;
+                    }
+                    end++; // make exclusive
+                }
 
-    /* ── Sync WPM controls ── */
-    $('wpmSlider').addEventListener('input', () => {
-        $('wpmInput').value = $('wpmSlider').value;
-        if (!paused) restartTimer();
-    });
+                // Apply ORP per-word, highlight the current word
+                const parts = [];
+                for (let i = start; i < end; i++) {
+                    if (i === this.currentIndex) {
+                        parts.push(`<strong>${this.formatWordWithORP(this.words[i])}</strong>`);
+                    } else {
+                        parts.push(`<span style="opacity:0.5">${this.words[i]}</span>`);
+                    }
+                }
+                return parts.join(' ');
+            }
 
-    $('wpmInput').addEventListener('change', () => {
-        let v = Math.max(50, Math.min(1000, parseInt($('wpmInput').value, 10) || 300));
-        $('wpmInput').value = v;
-        $('wpmSlider').value = v;
-        if (!paused) restartTimer();
-    });
+            endsWithPunctuation(word) {
+                return /[.!?;:]$/.test(word);
+            }
 
-    /* ── Display ── */
-    function showWord() {
-        if (index < words.length) {
-            $('wordDisplay').textContent = words[index];
-            updateUI();
+            getWordDuration(word) {
+                if (!this.smartPauses) return 60000 / this.wpm;
+                
+                const baseDuration = 60000 / this.wpm;
+                
+                // Punctuation adds 50% pause
+                if (this.endsWithPunctuation(word)) {
+                    return baseDuration * 1.5;
+                }
+                
+                // Longer words get slightly longer
+                if (word.length > 10) {
+                    return baseDuration * 1.2;
+                }
+                
+                return baseDuration;
+            }
+
+            getEffectiveDisplayMode() {
+                // Cruise mode forces phrase display; sprint uses the user-selected mode
+                if (this.mode === 'cruise') return 'phrase';
+                return this.displayMode;
+            }
+
+            getContextHTML() {
+                if (!this.showContext || this.words.length === 0) return '';
+                // Show surrounding ~15 words with the current word highlighted
+                const radius = 7;
+                const start = Math.max(0, this.currentIndex - radius);
+                const end = Math.min(this.words.length, this.currentIndex + radius + 1);
+                const parts = [];
+                for (let i = start; i < end; i++) {
+                    if (i === this.currentIndex) {
+                        parts.push(`<span class="ctx-current">${this.words[i]}</span>`);
+                    } else {
+                        parts.push(this.words[i]);
+                    }
+                }
+                return `<div class="context-view">${start > 0 ? '... ' : ''}${parts.join(' ')}${end < this.words.length ? ' ...' : ''}</div>`;
+            }
+
+            updateDisplay() {
+                const display = document.getElementById('wordDisplay');
+                if (this.words.length === 0) {
+                    display.innerHTML = '<div class="empty-state"><div class="icon">📖</div><p>Paste text to begin reading</p></div>';
+                    return;
+                }
+
+                display.classList.remove('pulse');
+                void display.offsetWidth; // Trigger reflow
+                display.classList.add('pulse');
+
+                // Use effective display mode (affected by sprint/cruise)
+                const savedMode = this.displayMode;
+                this.displayMode = this.getEffectiveDisplayMode();
+                display.innerHTML = this.getDisplayText() + this.getContextHTML();
+                this.displayMode = savedMode;
+
+                // Update progress
+                const progress = ((this.currentIndex + 1) / this.words.length) * 100;
+                document.getElementById('progressFill').style.width = progress + '%';
+                document.getElementById('currentWord').textContent = this.currentIndex + 1;
+                document.getElementById('totalWords').textContent = this.words.length;
+            }
+
+            loadText(text) {
+                // Split into words, preserving punctuation
+                this.words = text.trim().split(/\s+/).filter(w => w.length > 0);
+                this.currentIndex = 0;
+                this.updateDisplay();
+                this.updateStats();
+            }
+
+            updateStats() {
+                const wordCount = this.words.length;
+                const charCount = this.words.join('').length;
+                const readTime = Math.ceil(wordCount / this.wpm);
+                
+                document.getElementById('wordCount').textContent = wordCount;
+                document.getElementById('charCount').textContent = charCount;
+                document.getElementById('readTime').textContent = readTime + 'm';
+            }
+
+            startReading() {
+                if (this.words.length === 0) return;
+                
+                this.isPlaying = true;
+                document.getElementById('startBtn').style.display = 'none';
+                document.getElementById('pauseBtn').style.display = 'block';
+                
+                this.advance();
+            }
+
+            advance() {
+                if (!this.isPlaying) return;
+                
+                if (this.currentIndex < this.words.length) {
+                    this.updateDisplay();
+                    const word = this.words[this.currentIndex];
+                    const duration = this.getWordDuration(word);
+                    
+                    this.currentIndex++;
+                    this.timer = setTimeout(() => this.advance(), duration);
+                } else {
+                    this.endReading();
+                }
+            }
+
+            pauseReading() {
+                this.isPlaying = false;
+                clearTimeout(this.timer);
+                document.getElementById('pauseBtn').style.display = 'none';
+                document.getElementById('startBtn').style.display = 'block';
+                document.getElementById('startBtn').textContent = '▶ Resume';
+            }
+
+            resetReading() {
+                this.pauseReading();
+                this.currentIndex = 0;
+                this.updateDisplay();
+                document.getElementById('startBtn').textContent = '▶ Start';
+            }
+
+            endReading() {
+                this.isPlaying = false;
+                this.currentIndex = 0;
+                document.getElementById('pauseBtn').style.display = 'none';
+                document.getElementById('startBtn').style.display = 'block';
+                document.getElementById('startBtn').textContent = '✓ Finished!';
+                setTimeout(() => {
+                    document.getElementById('startBtn').textContent = '▶ Start';
+                    this.updateDisplay();
+                }, 2000);
+            }
+
+            setWPM(wpm) {
+                this.wpm = wpm;
+                document.getElementById('speedDisplay').textContent = wpm + ' WPM';
+                this.updateStats();
+            }
+
+            nextWord() {
+                if (this.currentIndex < this.words.length) {
+                    this.currentIndex++;
+                    this.updateDisplay();
+                }
+            }
+
+            previousWord() {
+                if (this.currentIndex > 0) {
+                    this.currentIndex--;
+                    this.updateDisplay();
+                }
+            }
         }
-    }
 
-    function updateUI() {
-        const total = words.length;
-        $('wordCounter').textContent = `${index + 1} / ${total}`;
-        $('progressBar').style.width = `${((index + 1) / total) * 100}%`;
-    }
+        const reader = new SpeedReader();
 
-    /* ── Timer ── */
-    function tick() {
-        if (index < words.length) {
-            showWord();
-            index++;
-        }
-        if (index >= words.length) {
-            clearInterval(timer);
-            timer = null;
-            paused = true;
-            $('pauseBtn').textContent = 'Restart';
-            $('readerScreen').classList.add('show-controls');
-        }
-    }
+        // Event Listeners
+        document.getElementById('textInput').addEventListener('input', (e) => {
+            reader.loadText(e.target.value);
+        });
 
-    function restartTimer() {
-        clearInterval(timer);
-        timer = setInterval(tick, msPerWord());
-    }
+        document.getElementById('speedSlider').addEventListener('input', (e) => {
+            reader.setWPM(parseInt(e.target.value));
+        });
 
-    /* ── Controls ── */
-    function startReader() {
-        const raw = $('textArea').value.trim();
-        if (!raw) return;
-        words = raw.split(/\s+/);
-        index = 0;
-        paused = false;
+        document.addEventListener('keydown', (e) => {
+            // Don't capture keys when typing in the textarea
+            if (document.activeElement === document.getElementById('textInput')) return;
 
-        $('inputScreen').style.display = 'none';
-        $('readerScreen').style.display = 'flex';
-        $('pauseBtn').textContent = 'Pause';
-        showWord();
-        index = 1;
-        restartTimer();
-    }
-
-    function togglePause() {
-        if (index >= words.length) {
-            // Restart from beginning
-            index = 0;
-            paused = false;
-            $('pauseBtn').textContent = 'Pause';
-            $('readerScreen').classList.remove('show-controls');
-            showWord();
-            index = 1;
-            restartTimer();
-            return;
-        }
-
-        paused = !paused;
-        if (paused) {
-            clearInterval(timer);
-            timer = null;
-            $('pauseBtn').textContent = 'Play';
-            $('readerScreen').classList.add('show-controls');
-        } else {
-            $('pauseBtn').textContent = 'Pause';
-            $('readerScreen').classList.remove('show-controls');
-            restartTimer();
-        }
-    }
-
-    function skip(n) {
-        index = Math.max(0, Math.min(words.length - 1, index + n));
-        showWord();
-        if (!paused && timer) {
-            restartTimer();
-        }
-        if (index < words.length && paused) {
-            // Stay paused but show the new word
-        }
-        if (index < words.length) {
-            $('pauseBtn').textContent = paused ? 'Play' : 'Pause';
-        }
-    }
-
-    function backToInput() {
-        clearInterval(timer);
-        timer = null;
-        paused = false;
-        $('readerScreen').style.display = 'none';
-        $('inputScreen').style.display = 'block';
-        $('wordDisplay').textContent = '';
-        $('progressBar').style.width = '0%';
-    }
-
-    /* ── Keyboard shortcuts ── */
-    document.addEventListener('keydown', e => {
-        // Don't capture when typing in textarea or wpm input
-        if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
-        if ($('readerScreen').style.display === 'none') return;
-
-        flashControls();
-        switch (e.code) {
-            case 'Space':
+            if (e.code === 'Space') {
                 e.preventDefault();
-                togglePause();
-                break;
-            case 'ArrowLeft':
-                e.preventDefault();
-                skip(e.shiftKey ? -30 : -1);
-                break;
-            case 'ArrowRight':
-                e.preventDefault();
-                skip(e.shiftKey ? 30 : 1);
-                break;
-            case 'Escape':
-                e.preventDefault();
-                backToInput();
-                break;
-        }
-    });
-</script>
+                if (reader.isPlaying) {
+                    reader.pauseReading();
+                } else if (reader.words.length > 0) {
+                    reader.startReading();
+                }
+            } else if (e.code === 'ArrowRight') {
+                reader.pauseReading();
+                reader.nextWord();
+            } else if (e.code === 'ArrowLeft') {
+                reader.pauseReading();
+                reader.previousWord();
+            }
+        });
 
+        function startReading() {
+            reader.startReading();
+        }
+
+        function pauseReading() {
+            reader.pauseReading();
+        }
+
+        function resetReading() {
+            reader.resetReading();
+        }
+
+        function setMode(mode, el) {
+            reader.mode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            el.classList.add('active');
+            reader.updateDisplay();
+        }
+
+        function updateDisplayMode() {
+            reader.displayMode = document.getElementById('displayMode').value;
+            reader.updateDisplay();
+        }
+
+        function toggleORP(el) {
+            el.classList.toggle('active');
+            reader.showORP = el.classList.contains('active');
+            reader.updateDisplay();
+        }
+
+        function togglePauses(el) {
+            el.classList.toggle('active');
+            reader.smartPauses = el.classList.contains('active');
+        }
+
+        function toggleContext(el) {
+            el.classList.toggle('active');
+            reader.showContext = el.classList.contains('active');
+            reader.updateDisplay();
+        }
+
+        function loadSample() {
+            const sample = `The development of reading ability is a cornerstone of human progress. Throughout history, 
+            societies that embraced literacy achieved greater technological and cultural advancement. Today, in our 
+            information-rich world, the ability to read efficiently and comprehend complex texts is more valuable than ever. 
+            Yet despite digital innovation, many people struggle to keep pace with the volume of information they encounter daily. 
+            This is where speed reading techniques become invaluable. The human brain possesses remarkable computational capacity. 
+            Studies show that we can process visual information far faster than our eyes can physically track across a page. 
+            Traditional reading wastes significant cognitive resources on eye movement and regression, activities that slow us down 
+            without enhancing comprehension. Rapid Serial Visual Presentation harnesses our brain's true potential by presenting words 
+            one at a time, eliminating unnecessary eye movement and allowing focus on pure comprehension. With consistent practice, 
+            most people can double or triple their reading speed while maintaining or even improving their understanding of the text.`;
+            
+            document.getElementById('textInput').value = sample;
+            reader.loadText(sample);
+        }
+
+        function clearText() {
+            document.getElementById('textInput').value = '';
+            reader.loadText('');
+        }
+    </script>
 </body>
 </html>

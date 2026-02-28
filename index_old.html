@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSVP Speed Reader</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ── Input Screen ── */
+        #inputScreen {
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        #inputScreen h1 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #e94560;
+        }
+
+        #textArea {
+            width: 100%;
+            height: 200px;
+            padding: 14px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            background: #16213e;
+            color: #e0e0e0;
+            font-size: 15px;
+            resize: vertical;
+            outline: none;
+        }
+
+        #textArea:focus { border-color: #e94560; }
+
+        #startBtn {
+            margin-top: 16px;
+            padding: 12px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            background: #e94560;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        #startBtn:hover { background: #c73652; }
+
+        /* ── Reader Screen ── */
+        #readerScreen {
+            display: none;
+            width: 100%;
+            height: 100vh;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* Progress bar */
+        #progressBar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: #e94560;
+            transition: width 0.15s linear;
+        }
+
+        /* Word display */
+        #wordDisplay {
+            font-size: clamp(2rem, 6vw, 4.5rem);
+            font-weight: 700;
+            letter-spacing: 2px;
+            min-height: 1.2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            cursor: pointer;
+        }
+
+        /* Controls — cinema mode: auto-hide */
+        #controls {
+            position: absolute;
+            bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            width: 90%;
+            max-width: 600px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        #readerScreen.show-controls #controls {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #progressBar {
+            opacity: 0;
+            transition: opacity 0.3s ease, width 0.15s linear;
+        }
+
+        #readerScreen.show-controls #progressBar {
+            opacity: 1;
+        }
+
+        /* Hide cursor when controls are hidden */
+        #readerScreen { cursor: none; }
+        #readerScreen.show-controls { cursor: default; }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            font-size: 15px;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+            color: #fff;
+            background: #16213e;
+            border: 1px solid #333;
+        }
+
+        .btn:hover { background: #1a3a5c; }
+        .btn.primary { background: #e94560; border-color: #e94560; }
+        .btn.primary:hover { background: #c73652; }
+
+        /* WPM control */
+        .wpm-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .wpm-group label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #aaa;
+        }
+
+        #wpmSlider {
+            width: 180px;
+            accent-color: #e94560;
+        }
+
+        #wpmInput {
+            width: 70px;
+            padding: 6px 8px;
+            font-size: 15px;
+            text-align: center;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #16213e;
+            color: #e0e0e0;
+            outline: none;
+        }
+
+        #wpmInput:focus { border-color: #e94560; }
+
+        /* Word counter */
+        #wordCounter {
+            font-size: 13px;
+            color: #777;
+        }
+
+        /* Keyboard hint */
+        #hint {
+            font-size: 12px;
+            color: #555;
+        }
+
+        #hint kbd {
+            padding: 2px 6px;
+            border: 1px solid #444;
+            border-radius: 3px;
+            background: #222;
+            font-family: inherit;
+        }
+
+        #backBtn { font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<!-- Input Screen -->
+<div id="inputScreen">
+    <h1>RSVP Speed Reader</h1>
+    <textarea id="textArea" placeholder="Paste your text here..."></textarea>
+    <br>
+    <button id="startBtn" onclick="startReader()">Start Reading</button>
+</div>
+
+<!-- Reader Screen -->
+<div id="readerScreen">
+    <div id="progressBar"></div>
+    <div id="wordDisplay"></div>
+
+    <div id="controls">
+        <div class="control-row">
+            <button class="btn" onclick="skip(-30)" title="Back 30 words">&#9664;&#9664; 30</button>
+            <button class="btn" onclick="skip(-1)" title="Back 1 word">&#9664;</button>
+            <button class="btn primary" id="pauseBtn" onclick="togglePause()">Pause</button>
+            <button class="btn" onclick="skip(1)" title="Forward 1 word">&#9654;</button>
+            <button class="btn" onclick="skip(30)" title="Forward 30 words">30 &#9654;&#9654;</button>
+        </div>
+
+        <div class="control-row wpm-group">
+            <label>WPM</label>
+            <input type="range" id="wpmSlider" min="50" max="1000" step="10" value="300">
+            <input type="number" id="wpmInput" min="50" max="1000" step="10" value="300">
+        </div>
+
+        <div id="wordCounter">0 / 0</div>
+
+        <div class="control-row">
+            <button class="btn" id="backBtn" onclick="backToInput()">&#8592; New Text</button>
+        </div>
+
+        <div id="hint">
+            <kbd>Space</kbd> pause &nbsp;
+            <kbd>&larr;</kbd><kbd>&rarr;</kbd> &plusmn;1 word &nbsp;
+            <kbd>Shift+&larr;</kbd><kbd>Shift+&rarr;</kbd> &plusmn;30 words
+        </div>
+    </div>
+</div>
+
+<script>
+    const $ = id => document.getElementById(id);
+
+    let words = [];
+    let index = 0;
+    let timer = null;
+    let paused = false;
+    let hideTimeout = null;
+
+    /* ── Cinema mode: show controls on mouse move, hide after idle ── */
+    function flashControls() {
+        $('readerScreen').classList.add('show-controls');
+        clearTimeout(hideTimeout);
+        hideTimeout = setTimeout(() => {
+            if (!paused) $('readerScreen').classList.remove('show-controls');
+        }, 2000);
+    }
+
+    $('readerScreen').addEventListener('mousemove', flashControls);
+    $('readerScreen').addEventListener('touchstart', flashControls);
+
+    /* ── WPM helpers ── */
+    function getWPM() {
+        return parseInt($('wpmSlider').value, 10);
+    }
+
+    function msPerWord() {
+        return 60000 / getWPM();
+    }
+
+    /* ── Sync WPM controls ── */
+    $('wpmSlider').addEventListener('input', () => {
+        $('wpmInput').value = $('wpmSlider').value;
+        if (!paused) restartTimer();
+    });
+
+    $('wpmInput').addEventListener('change', () => {
+        let v = Math.max(50, Math.min(1000, parseInt($('wpmInput').value, 10) || 300));
+        $('wpmInput').value = v;
+        $('wpmSlider').value = v;
+        if (!paused) restartTimer();
+    });
+
+    /* ── Display ── */
+    function showWord() {
+        if (index < words.length) {
+            $('wordDisplay').textContent = words[index];
+            updateUI();
+        }
+    }
+
+    function updateUI() {
+        const total = words.length;
+        $('wordCounter').textContent = `${index + 1} / ${total}`;
+        $('progressBar').style.width = `${((index + 1) / total) * 100}%`;
+    }
+
+    /* ── Timer ── */
+    function tick() {
+        if (index < words.length) {
+            showWord();
+            index++;
+        }
+        if (index >= words.length) {
+            clearInterval(timer);
+            timer = null;
+            paused = true;
+            $('pauseBtn').textContent = 'Restart';
+            $('readerScreen').classList.add('show-controls');
+        }
+    }
+
+    function restartTimer() {
+        clearInterval(timer);
+        timer = setInterval(tick, msPerWord());
+    }
+
+    /* ── Controls ── */
+    function startReader() {
+        const raw = $('textArea').value.trim();
+        if (!raw) return;
+        words = raw.split(/\s+/);
+        index = 0;
+        paused = false;
+
+        $('inputScreen').style.display = 'none';
+        $('readerScreen').style.display = 'flex';
+        $('pauseBtn').textContent = 'Pause';
+        showWord();
+        index = 1;
+        restartTimer();
+    }
+
+    function togglePause() {
+        if (index >= words.length) {
+            // Restart from beginning
+            index = 0;
+            paused = false;
+            $('pauseBtn').textContent = 'Pause';
+            $('readerScreen').classList.remove('show-controls');
+            showWord();
+            index = 1;
+            restartTimer();
+            return;
+        }
+
+        paused = !paused;
+        if (paused) {
+            clearInterval(timer);
+            timer = null;
+            $('pauseBtn').textContent = 'Play';
+            $('readerScreen').classList.add('show-controls');
+        } else {
+            $('pauseBtn').textContent = 'Pause';
+            $('readerScreen').classList.remove('show-controls');
+            restartTimer();
+        }
+    }
+
+    function skip(n) {
+        index = Math.max(0, Math.min(words.length - 1, index + n));
+        showWord();
+        if (!paused && timer) {
+            restartTimer();
+        }
+        if (index < words.length && paused) {
+            // Stay paused but show the new word
+        }
+        if (index < words.length) {
+            $('pauseBtn').textContent = paused ? 'Play' : 'Pause';
+        }
+    }
+
+    function backToInput() {
+        clearInterval(timer);
+        timer = null;
+        paused = false;
+        $('readerScreen').style.display = 'none';
+        $('inputScreen').style.display = 'block';
+        $('wordDisplay').textContent = '';
+        $('progressBar').style.width = '0%';
+    }
+
+    /* ── Keyboard shortcuts ── */
+    document.addEventListener('keydown', e => {
+        // Don't capture when typing in textarea or wpm input
+        if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+        if ($('readerScreen').style.display === 'none') return;
+
+        flashControls();
+        switch (e.code) {
+            case 'Space':
+                e.preventDefault();
+                togglePause();
+                break;
+            case 'ArrowLeft':
+                e.preventDefault();
+                skip(e.shiftKey ? -30 : -1);
+                break;
+            case 'ArrowRight':
+                e.preventDefault();
+                skip(e.shiftKey ? 30 : 1);
+                break;
+            case 'Escape':
+                e.preventDefault();
+                backToInput();
+                break;
+        }
+    });
+</script>
+
+</body>
+</html>
